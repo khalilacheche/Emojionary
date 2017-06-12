@@ -118,5 +118,7 @@ function getIndexByusername(username,array){
   }
   return array.indexOf(obj);
 }
-console.log('Server Started!');
-server.listen(8080);
+
+server.listen(8080,function () {
+  console.log('Server Started!');
+});

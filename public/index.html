@@ -10,8 +10,9 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="css/style.css">
-
   <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="css/emojionearea.css">
+<script type="text/javascript" src="js/emojionearea.js"></script>
 </head>
 
 <body onload="SetUp()">
@@ -83,7 +84,7 @@
       <div class="row">
           <div class="panel panel-default">
             <div class="panel-heading">Panel heading without title</div>
-              <div class="panel-body">
+              <div class="panel-body" style="font-size: xx-large;">
                 <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:80vh;" id="chatbox">
                 </div>
                 <div class="panel-footer">
@@ -205,6 +206,12 @@
 
   </script>
   <script src="js/index.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("#ChatInput").emojioneArea();
+    });
+  </script>
+
 
 </body>
 </html>
