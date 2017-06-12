@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome!</title>
+  <link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,300,600' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src="https://use.fontawesome.com/5c35264e88.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="css/style.css">
+
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body onload="SetUp()">
+  <div class="form">
+    <div id="loginSection">
+      <h1>Welcome !</h1>
+      <div id="error">
+          <div class="field-wrap">
+          <label textcolor="red">
+            Sorry! This username already exists!
+          </label>
+          <br>
+        </div>
+      </div>
+      <form action="/" id="loginForm">
+        <div class="field-wrap">
+        <input type="text" name="username" id="username" placeholder="Username"required autocomplete="off"/>
+        </div>
+        <button type="submit" id="submit" class="button button-block"/>Go On!</button>
+      </form>
+    </div><!-- tab-content -->
+    <div id="chooseMenuSection">
+      <ul class="tab-group">
+        <li class="tab active"><a href="#newRoomSection">New Room</a></li>
+        <li class="tab"><a href="#searchRoomSection">Enter a room</a></li>
+      </ul>
+      <div class="tab-content">
+        <div id="newRoomSection">
+          <h1>Create a new room</h1>
+          <form action="/newRoom" id="newRoomForm" method="post">
+            <div class="top-row">
+              <div class="field-wrap">
+                <label>
+                Room Name<span class="req">*</span>
+                </label>
+                <input type="text" id="roomName" required autocomplete="off" />
+              </div>
+              <div class="field-wrap">
+                <label>
+                  Max people<span class="req">*</span>
+                </label>
+                <input type="number" id="roomMax" required autocomplete="off"/>
+              </div><!-- add is private -->
+              <br>
+              <button type="submit" class="button button-block"/>Create Room</button>
+            </div>
+          </form>
+        </div>
+        <div id="searchRoomSection">
+          <br>
+          <form action="/" method="post" id="searchform">
+            <div class="field">
+              <input type="text" id="searchterm" placeholder="Search room by Name, ID, creator..." />
+              <button type="submit" onClick="SearchRoomClick()" id="search">Find!</button>
+            </div>
+          </form>
+          <br>
+          <h1>Rooms: </h1>
+          <table id="RoomSearchSectionTable" align="center" style="color:white;">
+          </table>
+        </div>
+      </div>
+    </div>
+  </div> <!-- /form -->
+  <div class="room">
+    <div class="canvas" style="float:left;">
+    </div>
+    <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100vh; width:30vw; float:right;">
+      <div class="row">
+          <div class="panel panel-default">
+            <div class="panel-heading">Panel heading without title</div>
+              <div class="panel-body">
+                <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:80vh;" id="chatbox">
+                </div>
+                <div class="panel-footer">
+                  <form id="chatform">
+                     <div class="input-group">
+                      <input type="text" class="form-control" id="ChatInput" autocomplete="off">
+                      <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit" id="ChatButton">Send</button>
+                      </span>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  <script>
+    var roomID;
+    var username;
+    var socket = io.connect('http://localhost:8080');
+
+    socket.on('Usererror', function(data) {
+      showError();//Show the error when the server tells us there's an error with the username
+    });
+    socket.on('roomRes',function(data){
+        displayRooms(data.rooms); //Displaying the rooms available
+    });
+    socket.on('authenticated', function(data) {
+      showChooseMenu(); //Showing the menu
+    });
+    socket.on('connected', function(data) {
+      if(data!=undefined){
+        roomID=data.Roomid; //Getting the id of the room we are connected to
+      }
+      showRoom();//Showing the room
+    });
+    socket.on('message', function(data) {
+      $('#chatbox').append(
+        '<div class="row message-bubble" style="background-color:'+data.color+';">'+
+          ' <p class="text-muted">'+data.user+'</p>'+
+          '<span>'+data.msg+'</span>'+
+        '</div>'
+      );//Showing the new message
+
+        var objDiv = document.getElementById("chatbox");//AutoScroll
+        objDiv.scrollTop = objDiv.scrollHeight;
+    });
+    socket.on('newUserConnected', function(data) {
+      console.log("prepending");
+      $('#chatbox').append(
+        '<div class="row message-bubble">'+
+          '<span><strong>'+data.user+'</strong> has joined the party!</span>'+
+        '</div>'
+      );//Showing the new message
+
+        var objDiv = document.getElementById("chatbox");//Autoscroll
+        objDiv.scrollTop = objDiv.scrollHeight;
+    });
+    $('#newRoomForm').submit(function () {
+      socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
+      return false; // Blocks the classical POST method
+    });
+    $('#chatform').submit(function () {
+      msg = $('#ChatInput').val(); //Getting the value of the input
+      $('#ChatInput').val(''); //Emptying the input
+      socket.emit('message', {user:username,msg:msg,Roomid:roomID});//Sending the message to the server
+      return false;
+    });
+    $('#searchform').submit(function () {
+      socket.emit('roomReq');//Sending the request
+      return false;
+    });
+    $('#loginForm').submit(function () {
+      username = $('#username').val();
+      socket.emit('userLogin', username);
+      return false;
+    });
+    $(document).on('click', '.connectButton', function () {
+      id = $(this).attr('id');
+      connectToRoom(id);
+    });
+    function displayRooms(rooms){
+      $("#RoomSearchSectionTable").empty();
+        for (var i=0; i<rooms.length;i++){
+          $('#RoomSearchSectionTable').prepend(
+            '<tr><td><div class="connectButton"id="'+rooms[i].id +'" align="center"><div class="buttonContent"><div class="RoomName">'+ rooms[i].name+ ' </div><div class="RoomDetails"><i class="fa fa-user" aria-hidden="true"></i>' +rooms[i].user+' / <i class="fa fa-users" aria-hidden="true"></i>'+rooms[i].userCount+'/'+rooms[i].roomMax+'</div></div> </div></td></tr>');
+      }
+    }
+    function connectToRoom(id) {
+      roomID=id;
+      socket.emit("connectToRoom",{user:username,Roomid:id})
+    }
+    function newRoomClick(){
+      $("#searchRoomSection").hide();
+      $("#newRoomSection").show();
+    }
+    function SetUp(){
+      $(".room").hide();
+      $("#loginSection").show();
+      $("#error").hide();
+      $("#chooseMenuSection").hide();
+    }
+    function showError(){
+      $("#loginSection").show();
+      $("#error").show();
+      $("#chooseMenuSection").hide();
+    }
+    function showChooseMenu(){
+      $("#loginSection").hide();
+      $("#error").hide();
+      $("#chooseMenuSection").show();
+    }
+    function showRoom(){
+      $(".room").show();
+      $(".form").hide();
+    }
+
+  </script>
+  <script src="js/index.js"></script>
+
+</body>
+</html>
