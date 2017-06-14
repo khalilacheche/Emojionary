@@ -66,7 +66,7 @@
           <form action="/" method="post" id="searchform">
             <div class="field">
               <input type="text" id="searchterm" placeholder="Search room by Name, ID, creator..." />
-              <button type="submit" onClick="SearchRoomClick()" id="search">Find!</button>
+              <button type="submit" onClick="" id="search">Find!</button>
             </div>
           </form>
           <br>
@@ -80,12 +80,12 @@
   <div class="room">
     <div class="canvas" style="float:left;">
     </div>
-    <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100vh; width:30vw; float:right;">
+    <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100%; width:30%; float:right;max-height:100vh;">
       <div class="row">
-          <div class="panel panel-default">
-            <div class="panel-heading">Panel heading without title</div>
-              <div class="panel-body" style="font-size: xx-large;">
-                <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:80vh;" id="chatbox">
+          <div class="panel panel-default"  style=" margin-bottom:0;">
+            <div class="panel-heading" style="max-height:15vh">Panel heading without title</div>
+              <div class="panel-body">
+                <div class="container"style="overflow-y:scroll;overflow-x:hidden;min-height:85vh;" id="chatbox">
                 </div>
                 <div class="panel-footer">
                   <form id="chatform">
@@ -102,109 +102,6 @@
           </div>
         </div>
       </div>
-
-  <script>
-    var roomID;
-    var username;
-    var socket = io.connect('http://localhost:8080');
-
-    socket.on('Usererror', function(data) {
-      showError();//Show the error when the server tells us there's an error with the username
-    });
-    socket.on('roomRes',function(data){
-        displayRooms(data.rooms); //Displaying the rooms available
-    });
-    socket.on('authenticated', function(data) {
-      showChooseMenu(); //Showing the menu
-    });
-    socket.on('connected', function(data) {
-      if(data!=undefined){
-        roomID=data.Roomid; //Getting the id of the room we are connected to
-      }
-      showRoom();//Showing the room
-    });
-    socket.on('message', function(data) {
-      $('#chatbox').append(
-        '<div class="row message-bubble" style="background-color:'+data.color+';">'+
-          ' <p class="text-muted">'+data.user+'</p>'+
-          '<span>'+data.msg+'</span>'+
-        '</div>'
-      );//Showing the new message
-
-        var objDiv = document.getElementById("chatbox");//AutoScroll
-        objDiv.scrollTop = objDiv.scrollHeight;
-    });
-    socket.on('newUserConnected', function(data) {
-      console.log("prepending");
-      $('#chatbox').append(
-        '<div class="row message-bubble">'+
-          '<span><strong>'+data.user+'</strong> has joined the party!</span>'+
-        '</div>'
-      );//Showing the new message
-
-        var objDiv = document.getElementById("chatbox");//Autoscroll
-        objDiv.scrollTop = objDiv.scrollHeight;
-    });
-    $('#newRoomForm').submit(function () {
-      socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
-      return false; // Blocks the classical POST method
-    });
-    $('#chatform').submit(function () {
-      msg = $('#ChatInput').val(); //Getting the value of the input
-      $('#ChatInput').val(''); //Emptying the input
-      socket.emit('message', {user:username,msg:msg,Roomid:roomID});//Sending the message to the server
-      return false;
-    });
-    $('#searchform').submit(function () {
-      socket.emit('roomReq');//Sending the request
-      return false;
-    });
-    $('#loginForm').submit(function () {
-      username = $('#username').val();
-      socket.emit('userLogin', username);
-      return false;
-    });
-    $(document).on('click', '.connectButton', function () {
-      id = $(this).attr('id');
-      connectToRoom(id);
-    });
-    function displayRooms(rooms){
-      $("#RoomSearchSectionTable").empty();
-        for (var i=0; i<rooms.length;i++){
-          $('#RoomSearchSectionTable').prepend(
-            '<tr><td><div class="connectButton"id="'+rooms[i].id +'" align="center"><div class="buttonContent"><div class="RoomName">'+ rooms[i].name+ ' </div><div class="RoomDetails"><i class="fa fa-user" aria-hidden="true"></i>' +rooms[i].user+' / <i class="fa fa-users" aria-hidden="true"></i>'+rooms[i].userCount+'/'+rooms[i].roomMax+'</div></div> </div></td></tr>');
-      }
-    }
-    function connectToRoom(id) {
-      roomID=id;
-      socket.emit("connectToRoom",{user:username,Roomid:id})
-    }
-    function newRoomClick(){
-      $("#searchRoomSection").hide();
-      $("#newRoomSection").show();
-    }
-    function SetUp(){
-      $(".room").hide();
-      $("#loginSection").show();
-      $("#error").hide();
-      $("#chooseMenuSection").hide();
-    }
-    function showError(){
-      $("#loginSection").show();
-      $("#error").show();
-      $("#chooseMenuSection").hide();
-    }
-    function showChooseMenu(){
-      $("#loginSection").hide();
-      $("#error").hide();
-      $("#chooseMenuSection").show();
-    }
-    function showRoom(){
-      $(".room").show();
-      $(".form").hide();
-    }
-
-  </script>
   <script src="js/index.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
