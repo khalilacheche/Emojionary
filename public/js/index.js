@@ -45,7 +45,7 @@ $('#newRoomForm').submit(function () {
   return false; // Blocks the classical POST method
 });
 $('#chatform').submit(function () {
-  msg = $('#ChatInput').val(); //Getting the value of the input
+  msg = document.getElementsByClassName("emojionearea-editor")[0].innerHTML; //Getting the value of the input
   $('#ChatInput').val(''); //Emptying the input
   $('.emojionearea-editor').text(''); //Emptying the input
   if(msg!=''){
@@ -66,11 +66,12 @@ $(document).on('click', '.connectButton', function () {
   id = $(this).attr('id');
   connectToRoom(id);
 });
-$('#ChatInput').keypress(function(e){
-if (e.keyCode == 13) {
-  console.log("press");
-$('#chatform').submit();
-}
+
+document.addEventListener('keydown', function(event) {
+    if(event.keyCode == 13) {
+      $('#chatform').submit();
+
+    }
 });
 function displayRooms(rooms){
   $("#RoomSearchSectionTable").empty();
