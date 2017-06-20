@@ -39,11 +39,20 @@ io.sockets.on('connection', function (socket) {
     userObj=users[index];//Copying the object of this user in the users array to put it in the connusers array
     rooms[data.Roomid].connUsers.push(userObj);//Pushing the userObj array
     socket.emit("connected");//Telling the user he's connected
-    for (var i = 0; i < users.length; i++) {
-      if (users[i].Roomid==data.Roomid) {
-        users[i].socket.emit("newUserConnected",{user:data.user});//Telling the other users in the same room about the new connection
-      }
+    sendInfo(data.Roomid,data.user+" has joined the Party!");
+    if (rooms[data.Roomid].connUsers.length==2) {
+      console.log("starting new game on room "+data.Roomid);
+      StartNextTurn(rooms[data.Roomid]);
     }
+  });
+  socket.on("TimeOut",function(data){
+    if (!data.user==rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username){
+      return;
+    }
+    index=getIndexByusername(data.user,users);
+    users[index].score-=2;
+    sendInfo(data.Roomid,users[index].username+" timed out! his score: "+users[index].score);
+    StartNextTurn(rooms[data.Roomid]);
   });
 
   socket.on('roomReq',function(){
@@ -60,7 +69,7 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('newRoomReq',function(data){
-    rooms[roomCount]={user:data.user,name:data.roomName,roomMax:data.roomMax,id:roomCount};
+    rooms[roomCount]={user:data.user,name:data.roomName,roomMax:data.roomMax,id:roomCount,userTurn:0};
     rooms[roomCount].connUsers=[];
     var index= getIndexByusername(data.user,users);
     var userObj ={};
@@ -76,20 +85,48 @@ io.sockets.on('connection', function (socket) {
       socket.emit('Usererror');
     }else {
       socket.emit('authenticated');
-      users[userCount]={username:data,socket:socket,isCTR:false};
+      users[userCount]={username:data,socket:socket,isCTR:false,score:0};
       userCount++;
     }
   });
-
+  socket.on ('ChosenWord',function(data){
+    if (!data.user==rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username){
+      return;
+    }
+    rooms[data.Roomid].word=data.word;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].Roomid==data.Roomid && users[i].username!=data.user ) {
+          users[i].socket.emit("startGameCountdown",60);//Tell all users but the user in this round to start counting
+      }
+    }
+  });
   socket.on('message',function(data){
-    var textComp =  compareStrings("Hey",data.msg);
+    if (data.user==rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username){
+      return;
+    }
+    var textComp =  compareStrings(rooms[data.Roomid].word,data.msg);
     var color;
-    if (textComp<0.5) {
+    if (textComp==2) {
+      color="#ffffff";
+    }else if (textComp<0.5) {
       color="#f4d2d2";
     }else if(textComp<1) {
       color="#fcffbc";
     }else {
       color="#caf7e0";
+      for (var i = 0; i < users.length; i++) {
+        if (users[i].Roomid==data.Roomid) {
+          users[i].socket.emit("message",{msg:data.msg,user:data.user,color:color});
+        }
+      }
+      index =getIndexByusername(data.user,users);
+      users[index].score+=2;
+      users[getIndexByusername(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username,users)].score+=2;
+      sendInfo(data.Roomid,data.user+" won this Round!");
+      sendInfo(data.Roomid,data.user+"'s score: "+users[getIndexByusername(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username,users)].score);
+      sendInfo(data.Roomid,rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username+"'s score: "+users[index].score);
+      StartNextTurn(rooms[data.Roomid]);
+      return;
     }
     for (var i = 0; i < users.length; i++) {
       if (users[i].Roomid==data.Roomid) {
@@ -99,6 +136,9 @@ io.sockets.on('connection', function (socket) {
   });
 });
 function compareStrings(str1,str2){
+  if (str1 == undefined || str2 == undefined) {
+    return 2;
+  }
   var score=0;
   var length = (str1.length > str2.length) ? str1.length :str2.length;
   for (var i = 0; i < length; i++) {
@@ -110,13 +150,28 @@ function compareStrings(str1,str2){
 }
 
 function getIndexByusername(username,array){
-  var obj={};
   for (var i = 0; i < array.length; i++) {
     if (array[i].username==username) {
-      obj=array[i];
+      return i;
     }
   }
-  return array.indexOf(obj);
+
+}
+function StartNextTurn(room){
+  rooms[room.id].word=undefined;
+  room.userTurn++;
+  if(room.userTurn>(room.connUsers.length-1)){
+    room.userTurn=0;
+  }
+  sendInfo(room.id,"it's "+room.connUsers[room.userTurn].username+"'s turn");
+  room.connUsers[room.userTurn].socket.emit("StartNextTurn",{words:["Hey","Khalil","Random","word"]});
+}
+function sendInfo(Roomid,message){
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].Roomid==Roomid) {
+      users[i].socket.emit("info",message);
+    }
+  }
 }
 
 server.listen(8080,function () {

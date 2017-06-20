@@ -1,9 +1,14 @@
 
 $(document).ready(SetUp());
+//Var declaration
 var roomID;
 var username;
+var timer;
+var countdown;
 var socket = io.connect('http://localhost:8080');
+var popup = document.getElementById('wordPopup');
 
+//Events
 socket.on('Usererror', function(data) {
   showError();//Show the error when the server tells us there's an error with the username
 });
@@ -30,16 +35,42 @@ socket.on('message', function(data) {
     var objDiv = document.getElementById("chatbox");//AutoScroll
     objDiv.scrollTop = objDiv.scrollHeight;
 });
-socket.on('newUserConnected', function(data) {
+socket.on('info', function(message) {
   $('#chatbox').append(
     '<div class="row message-bubble">'+
-      '<span><strong>'+data.user+'</strong> has joined the party!</span>'+
+      '<span><strong>'+message+'</strong></span>'+
     '</div>'
   );//Showing the new message
 
     var objDiv = document.getElementById("chatbox");//Autoscroll
     objDiv.scrollTop = objDiv.scrollHeight;
 });
+socket.on('startGameCountdown', function(start) {
+  window.clearInterval(countdown);
+  window.clearInterval(timer);
+  var time = start;
+  $('#countdown').show();
+  countdown = setInterval(function(){
+    document.getElementById("countdown").innerHTML = time;
+    time--;
+    if(time==0){
+      window.clearInterval(countdown);
+      $('#countdown').hide();
+    }
+  }, 1000);
+});
+socket.on('StartNextTurn', function(data) {
+  window.clearInterval(timer);
+  startTimer(10);
+  $(".popup-body").empty();
+  for (var i = 0; i < data.words.length; i++) {
+    $('.popup-body').append(
+      '<button type="button" class="btn btn-secondary btn-lg btn-block" onclick="sendChosenWord(\''+data.words[i]+'\'); ">'+data.words[i]+'</button>'
+    );
+  }
+  popup.style.display = "block";
+});
+//Submit functions
 $('#newRoomForm').submit(function () {
   socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
   return false; // Blocks the classical POST method
@@ -54,7 +85,7 @@ $('#chatform').submit(function () {
   return false;
 });
 $('#searchform').submit(function () {
-  socket.emit('roomReq');//Sending the request
+  socket.emit('roomReq');//Sending the search request
   return false;
 });
 $('#loginForm').submit(function () {
@@ -73,12 +104,30 @@ document.addEventListener('keydown', function(event) {
 
     }
 });
+//Custom functions
 function displayRooms(rooms){
   $("#RoomSearchSectionTable").empty();
     for (var i=0; i<rooms.length;i++){
       $('#RoomSearchSectionTable').prepend(
         '<tr><td><div class="connectButton"id="'+rooms[i].id +'" align="center"><div class="buttonContent"><div class="RoomName">'+ rooms[i].name+ ' </div><div class="RoomDetails"><i class="fa fa-user" aria-hidden="true"></i>' +rooms[i].user+' / <i class="fa fa-users" aria-hidden="true"></i>'+rooms[i].userCount+'/'+rooms[i].roomMax+'</div></div> </div></td></tr>');
   }
+}
+function startTimer(start){
+  time=start;
+  timer = setInterval(function(){
+    document.getElementById("timer").innerHTML = time;
+    document.getElementById("countdown").innerHTML = time;
+    time--;
+    if(time==0){
+      window.clearInterval(timer);
+      timeout();
+    }
+  }, 1000);
+
+}
+function timeout(){
+  socket.emit("TimeOut",{user:username,Roomid:roomID});
+  popup.style.display = "none";
 }
 function connectToRoom(id) {
   roomID=id;
@@ -108,7 +157,14 @@ function showRoom(){
   $(".room").show();
   $(".form").hide();
 }
-
+function sendChosenWord(word){
+  window.clearInterval(timer);
+  window.clearInterval(countdown);
+  socket.emit('ChosenWord',{user:username,Roomid:roomID,word:word});
+  popup.style.display = "none";
+  startTimer(60);
+  $('#countdown').show();
+}
 //Two tabs
 $('.tab a').on('click', function (e) {
   e.preventDefault();
@@ -123,6 +179,9 @@ $('.tab a').on('click', function (e) {
   $(target).fadeIn(600);
 
 });
+  //Popup
+
+
 /*$('.form').find('input, textarea').on('keyup blur focus', function (e) {
 
   var $this = $(this),

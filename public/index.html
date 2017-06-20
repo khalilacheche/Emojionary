@@ -79,28 +79,41 @@
   </div> <!-- /form -->
   <div class="room">
     <div class="canvas" style="float:left;">
+      <div id="countdown"></div>
     </div>
     <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100%; width:30%; float:right;max-height:100vh;">
       <div class="row">
-          <div class="panel panel-default" style="height:100vh margin-bottom:0;">
-              <div class="panel-body">
-                <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:92vh;" id="chatbox">
+        <div class="panel panel-default" style="height:100vh margin-bottom:0;">
+          <div class="panel-body">
+            <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:92vh;" id="chatbox">
+            </div>
+            <div class="panel-footer">
+              <form id="chatform">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="ChatInput" autocomplete="off">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="ChatButton">Send</button>
+                  </span>
                 </div>
-                <div class="panel-footer">
-                  <form id="chatform">
-                     <div class="input-group">
-                      <input type="text" class="form-control" id="ChatInput" autocomplete="off">
-                      <span class="input-group-btn">
-                        <button class="btn btn-default" type="submit" id="ChatButton">Send</button>
-                      </span>
-                    </div>
-                  </form>
-                </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+  <div id="wordPopup" class="popup">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h2>Choose one of these words: </h2>
+          <div id="timer"></div>
+      </div>
+      <div class="popup-body">
+      </div>
+    </div>
+  </div>
+
+</div>
   <script src="js/index.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
