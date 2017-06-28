@@ -13,6 +13,8 @@
   <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="css/emojionearea.css">
 <script type="text/javascript" src="js/emojionearea.js"></script>
+<script type="text/javascript" src="js/FetchAppleEmojies.js"></script>
+
 </head>
 
 <body onload="SetUp()">
@@ -45,16 +47,11 @@
           <form action="/newRoom" id="newRoomForm" method="post">
             <div class="top-row">
               <div class="field-wrap">
-                <label>
-                Room Name<span class="req">*</span>
-                </label>
-                <input type="text" id="roomName" required autocomplete="off" />
+                <input type="text" id="roomName" required autocomplete="off" placeholder="Room Name"/>
               </div>
               <div class="field-wrap">
-                <label>
-                  Max people<span class="req">*</span>
-                </label>
-                <input type="number" id="roomMax" required autocomplete="off"/>
+
+                <input type="number" id="roomMax" required autocomplete="off" placeholder="Max people"/>
               </div><!-- add is private -->
               <br>
               <button type="submit" class="button button-block"/>Create Room</button>
@@ -79,6 +76,7 @@
   </div> <!-- /form -->
   <div class="room">
     <div class="canvas" style="float:left;">
+      <h1>hi there</h1>
       <div id="countdown"></div>
     </div>
     <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100%; width:30%; float:right;max-height:100vh;">

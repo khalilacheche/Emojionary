@@ -1,12 +1,14 @@
 
+
 $(document).ready(SetUp());
 //Var declaration
-var roomID;
-var username;
-var timer;
-var countdown;
-var socket = io.connect('http://localhost:8080');
-var popup = document.getElementById('wordPopup');
+var roomID,
+    username,
+    timer,
+    countdown,
+    socket = io.connect('http://localhost:8080'),
+    popup = document.getElementById('wordPopup');
+
 
 //Events
 socket.on('Usererror', function(data) {

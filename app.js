@@ -2,8 +2,10 @@
 //Emojionary
 //Project Started on 09/06/2017 (dd/mm/yyyy)
 
-var express = require('express');
-var bodyParser = require('body-parser');
+var express = require('express'),
+    request = require('request'),
+    AppleEmojiesBody ,
+    bodyParser = require('body-parser');
 var app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server),
@@ -13,6 +15,7 @@ var users=[],
     rooms=[],
     userCount=0,
     roomCount=0;
+const cheerio = require('cheerio')
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -173,6 +176,23 @@ function sendInfo(Roomid,message){
     }
   }
 }
+var w = fs.createWriteStream('downloaded.html');
+request('http://emojipedia.org/apple/').pipe(w)
+
+w.on('finish', function(){
+  console.log("done");
+
+  const $ = cheerio.load(fs.readFileSync("downloaded.html"));
+  var images = [];
+
+      $(".emoji-grid").children().children().children().each(function(){
+        images.push($(this).attr('data-src'))
+      })
+      console.log(images);
+});
+
+
+
 
 server.listen(8080,function () {
   console.log('Server Started!');
