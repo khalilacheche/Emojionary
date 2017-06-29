@@ -5,6 +5,7 @@
 var express = require('express'),
     request = require('request'),
     AppleEmojiesBody ,
+    images = [];
     bodyParser = require('body-parser');
 var app = express(),
     server = require('http').createServer(app),
@@ -15,14 +16,19 @@ var users=[],
     rooms=[],
     userCount=0,
     roomCount=0;
-const cheerio = require('cheerio')
+const cheerio = require('cheerio');
+const ejsLint = require('ejs-lint'); //Linter/Syntax Checker for EJS Templates.
 
-app.use(express.static("public"));
+//app.use(express.static("public"));
+app.set('views', __dirname+'/views');
+app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 
 app.get('/', function (req, res) {
-  res.sendfile(__dirname + '/index.html');//sending the index file as a response when the user connects to the indexpage
+  //res.sendfile(__dirname + '/index.html');//sending the index file as a response when the user connects to the indexpage
+  console.log(images);
+  res.render("index",{images:images});
 });
 
 io.sockets.on('connection', function (socket) {
@@ -180,10 +186,11 @@ var w = fs.createWriteStream('downloaded.html');
 request('http://emojipedia.org/apple/').pipe(w)
 
 w.on('finish', function(){
+  images = [];
   console.log("done");
 
   const $ = cheerio.load(fs.readFileSync("downloaded.html"));
-  var images = [];
+
 
       $(".emoji-grid").children().children().children().each(function(){
         images.push($(this).attr('data-src'))
@@ -192,7 +199,7 @@ w.on('finish', function(){
 
 
 
-
-server.listen(8080,function () {
-  console.log('Server Started!');
-});
+  server.listen(8080,function () {
+    console.log('Server Started!');
+    console.log(images[20]);
+  });

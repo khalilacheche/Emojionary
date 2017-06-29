@@ -13,9 +13,13 @@
   <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="css/emojionearea.css">
 <script type="text/javascript" src="js/emojionearea.js"></script>
-<script type="text/javascript" src="js/FetchAppleEmojies.js"></script>
 
 </head>
+<% images.forEach(function(image){ %>
+  <% if(image != null) { %>
+    <h4><%= image %></h4>
+  <% } %>
+<% }) %>
 
 <body onload="SetUp()">
   <div class="form">
