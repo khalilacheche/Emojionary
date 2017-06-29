@@ -188,7 +188,6 @@ w.on('finish', function(){
       $(".emoji-grid").children().children().children().each(function(){
         images.push($(this).attr('data-src'))
       })
-      console.log(images);
 });
 
 
