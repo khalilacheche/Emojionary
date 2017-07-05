@@ -27,13 +27,13 @@ app.set('view engine', 'ejs');
 
 app.get('/', function (req, res) {
   //res.sendfile(__dirname + '/index.html');//sending the index file as a response when the user connects to the indexpage
-  console.log(images);
+  //console.log(images);
   res.render("index",{images:images});
 });
 
 io.sockets.on('connection', function (socket) {
   socket.on('connectToRoom',function(data){
-    var index= getIndexByusername(data.user,users);//Getting the index of this user in the users array
+    var index= getIndexBysocket(socket);//Getting the index of this user in the users array
     if(users[index].isCTR){
       return; //if the user is already connected to a room, we stop the execution of the function
     }
@@ -55,10 +55,12 @@ io.sockets.on('connection', function (socket) {
     }
   });
   socket.on("TimeOut",function(data){
+    if(data.Roomid==undefined||rooms[data.Roomid]==undefined)
+      return;
     if (!data.user==rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username){
       return;
     }
-    index=getIndexByusername(data.user,users);
+    index=getIndexBysocket(socket);
     users[index].score-=2;
     sendInfo(data.Roomid,users[index].username+" timed out! his score: "+users[index].score);
     StartNextTurn(rooms[data.Roomid]);
@@ -80,7 +82,7 @@ io.sockets.on('connection', function (socket) {
   socket.on('newRoomReq',function(data){
     rooms[roomCount]={user:data.user,name:data.roomName,roomMax:data.roomMax,id:roomCount,userTurn:0};
     rooms[roomCount].connUsers=[];
-    var index= getIndexByusername(data.user,users);
+    var index= getIndexBysocket(socket);
     var userObj ={};
     users[index].Roomid=roomCount;
     userObj=users[index];
@@ -128,11 +130,11 @@ io.sockets.on('connection', function (socket) {
           users[i].socket.emit("message",{msg:data.msg,user:data.user,color:color});
         }
       }
-      index =getIndexByusername(data.user,users);
+      index =getIndexBysocket(socket);
       users[index].score+=2;
-      users[getIndexByusername(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username,users)].score+=2;
+      users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].socket)].score+=2;
       sendInfo(data.Roomid,data.user+" won this Round!");
-      sendInfo(data.Roomid,data.user+"'s score: "+users[getIndexByusername(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username,users)].score);
+      sendInfo(data.Roomid,data.user+"'s score: "+users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].socket)].score);
       sendInfo(data.Roomid,rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username+"'s score: "+users[index].score);
       StartNextTurn(rooms[data.Roomid]);
       return;
@@ -142,6 +144,33 @@ io.sockets.on('connection', function (socket) {
         users[i].socket.emit("message",{msg:data.msg,user:data.user,color:color});
       }
     }
+  });
+  socket.on('disconnect',function(){
+    var index = getIndexBysocket(socket);
+    if (index==-1) {
+      return false;
+    }
+    sendInfo(users[index].Roomid,users[index].username+" left the party!");
+    var socketid;
+    if (rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn]!=undefined) {
+      socketid=rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn].socket.id;
+    }
+    rooms[users[index].Roomid].connUsers.splice(getIndexBysocket(socket,rooms[users[index].Roomid].connUsers),1);
+    if(rooms[users[index].Roomid].connUsers.length<1){
+      for (var i = 0; i < users.length; i++) {
+        if(users[i].Roomid>users[index].Roomid){
+          users[i].Roomid--;
+        }
+        rooms.splice(users[index].Roomid,1);
+        roomCount--;
+      }
+    }else {
+      if(socketid==socket.id){
+        StartNextTurn(rooms[users[index].Roomid]);
+    }
+  }
+    users.splice(index,1);
+    userCount--;
   });
 });
 function compareStrings(str1,str2){
@@ -158,15 +187,24 @@ function compareStrings(str1,str2){
   return score/length;
 }
 
-function getIndexByusername(username,array){
+function getIndexBysocket(socket,array){
+  if (socket==undefined)
+    return;
+  if(array==undefined){
+    array=users;
+  }
   for (var i = 0; i < array.length; i++) {
-    if (array[i].username==username) {
+    if (array[i].socket.id==socket.id) {
       return i;
     }
   }
+  return -1;
 
 }
 function StartNextTurn(room){
+  if (rooms[room.id].length==0) {
+    return;
+  }
   rooms[room.id].word=undefined;
   room.userTurn++;
   if(room.userTurn>(room.connUsers.length-1)){
@@ -201,5 +239,5 @@ w.on('finish', function(){
 
   server.listen(8080,function () {
     console.log('Server Started!');
-    console.log(images[20]);
+    //console.log(images[20]);
   });
