@@ -12,7 +12,7 @@ var roomID,
 
 //Events
 socket.on('Usererror', function(data) {
-  showError();//Show the error when the server tells us there's an error with the username
+  showError(data);//Show the error when the server tells us there's an error with the username
 });
 socket.on('roomRes',function(data){
     displayRooms(data.rooms); //Displaying the rooms available
@@ -87,7 +87,8 @@ $('#chatform').submit(function () {
   return false;
 });
 $('#searchform').submit(function () {
-  socket.emit('roomReq');//Sending the search request
+  var searchterm=$('#searchterm').val();
+  socket.emit('roomReq',searchterm);//Sending the search request
   return false;
 });
 $('#loginForm').submit(function () {
@@ -145,10 +146,10 @@ function SetUp(){
   $("#error").hide();
   $("#chooseMenuSection").hide();
 }
-function showError(){
-  $("#loginSection").show();
+function showError(msg){
+  $("#error").text(msg);
   $("#error").show();
-  $("#chooseMenuSection").hide();
+  console.log($("#error").text());
 }
 function showChooseMenu(){
   $("#loginSection").hide();
@@ -170,10 +171,13 @@ function sendChosenWord(word){
 //Two tabs
 $('.tab a').on('click', function (e) {
   e.preventDefault();
-
+  console.log($(this).parent().attr('id'));
+  if($(this).parent().attr('id')=="search"){
+    console.log("click");
+    socket.emit("roomReq");
+  }
   $(this).parent().addClass('active');
   $(this).parent().siblings().removeClass('active');
-
   target = $(this).attr('href');
 
   $('.tab-content > div').not(target).hide();

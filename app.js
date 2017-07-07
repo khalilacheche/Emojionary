@@ -33,6 +33,10 @@ app.get('/', function (req, res) {
 
 io.sockets.on('connection', function (socket) {
   socket.on('connectToRoom',function(data){
+    if (rooms[data.Roomid].connUsers.length==rooms[data.Roomid].roomMax) {
+      socket.emit("Usererror","Sorry! This room is already full!");
+      return;
+    }
     var index= getIndexBysocket(socket);//Getting the index of this user in the users array
     if(users[index].isCTR){
       return; //if the user is already connected to a room, we stop the execution of the function
@@ -66,17 +70,27 @@ io.sockets.on('connection', function (socket) {
     StartNextTurn(rooms[data.Roomid]);
   });
 
-  socket.on('roomReq',function(){
+  socket.on('roomReq',function(data){
+    var roomsSend=[];
     var roomRes=[];
     for (var i = 0; i < rooms.length; i++) {
-      roomRes[i]={};
-      roomRes[i].id=rooms[i].id;
-      roomRes[i].user=rooms[i].user;
-      roomRes[i].name=rooms[i].name;
-      roomRes[i].roomMax=rooms[i].roomMax;
-      roomRes[i].userCount=rooms[i].connUsers.length;//Copying the data we want from the rooms object (to save bandwidth)
+      roomsSend[i]={};
+      roomsSend[i].id=rooms[i].id;
+      roomsSend[i].user=rooms[i].user;
+      roomsSend[i].name=rooms[i].name;
+      roomsSend[i].roomMax=rooms[i].roomMax;
+      roomsSend[i].userCount=rooms[i].connUsers.length;//Copying the data we want from the rooms object (to save bandwidth)
     }
-    socket.emit('roomRes',{rooms:roomRes});//Sending the info to the user
+    if (data==''||data==undefined) {
+      socket.emit('roomRes',{rooms:roomsSend});//Sending the full array to the user
+      return;
+    }
+    for (var i = 0; i < roomsSend.length; i++) {
+      if(compareStrings(roomsSend[i].user.toLowerCase(),data.toLowerCase())>0.5|| compareStrings(roomsSend[i].name.toLowerCase(),data.toLowerCase())>0.5){
+        roomRes.push(roomsSend[i]);
+      }
+    }
+    socket.emit('roomRes',{rooms:roomRes});//Sending the sorted array to the user
   });
 
   socket.on('newRoomReq',function(data){
@@ -92,13 +106,15 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on ('userLogin',function(data){
-    if (data in users) {
-      socket.emit('Usererror');
-    }else {
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username==data) {
+        socket.emit('Usererror',"Sorry! this username already exists!");
+        return;
+      }
+    }
       socket.emit('authenticated');
       users[userCount]={username:data,socket:socket,isCTR:false,score:0};
       userCount++;
-    }
   });
   socket.on ('ChosenWord',function(data){
     if (!data.user==rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username){
@@ -147,9 +163,10 @@ io.sockets.on('connection', function (socket) {
   });
   socket.on('disconnect',function(){
     var index = getIndexBysocket(socket);
-    if (index==-1) {
-      return false;
-    }
+    if (index==-1)
+      return ;
+    if (users[index].isCTR==false)
+      return ;
     sendInfo(users[index].Roomid,users[index].username+" left the party!");
     var socketid;
     if (rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn]!=undefined) {
