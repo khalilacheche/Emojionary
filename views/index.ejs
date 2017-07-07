@@ -19,16 +19,16 @@
 
 <body onload="SetUp()">
   <div class="form">
+    <div id="error" style="color:red;">
+        <div class="field-wrap">
+        <label textcolor="red">
+          Sorry! This username already exists!
+        </label>
+        <br>
+      </div>
+    </div>
     <div id="loginSection">
       <h1>Welcome !</h1>
-      <div id="error">
-          <div class="field-wrap">
-          <label textcolor="red">
-            Sorry! This username already exists!
-          </label>
-          <br>
-        </div>
-      </div>
       <form action="/" id="loginForm">
         <div class="field-wrap">
         <input type="text" name="username" id="username" placeholder="Username"required autocomplete="off"/>
@@ -39,7 +39,7 @@
     <div id="chooseMenuSection">
       <ul class="tab-group">
         <li class="tab active"><a href="#newRoomSection">New Room</a></li>
-        <li class="tab"><a href="#searchRoomSection">Enter a room</a></li>
+        <li class="tab" id="search"><a href="#searchRoomSection">Enter a room</a></li>
       </ul>
       <div class="tab-content">
         <div id="newRoomSection">
