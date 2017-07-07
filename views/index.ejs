@@ -84,7 +84,7 @@
 
       <div class="">
         <% for(var i=43; i<images.length; i++) {%>
-       <img src="<%= images[i] %>" title="<%= names[i] %>"></img>
+       <img src="<%= images[i] %>" title="<%=names[i] %>"></img>
     <% } %>
       </div>
       <script type="text/javascript">
@@ -97,6 +97,9 @@
           }
         })
       </script>
+
+
+
       <div id="countdown"></div>
     </div>
     <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100%; width:30%; float:right;max-height:100vh;">
