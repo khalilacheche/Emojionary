@@ -5,7 +5,8 @@
 var express = require('express'),
     request = require('request'),
     AppleEmojiesBody ,
-    images = [];
+    names = [],
+    images = [],
     bodyParser = require('body-parser');
 var app = express(),
     server = require('http').createServer(app),
@@ -28,7 +29,7 @@ app.set('view engine', 'ejs');
 app.get('/', function (req, res) {
   //res.sendfile(__dirname + '/index.html');//sending the index file as a response when the user connects to the indexpage
   //console.log(images);
-  res.render("index",{images:images});
+  res.render("index",{images:images,names:names});
 });
 
 io.sockets.on('connection', function (socket) {
@@ -231,6 +232,7 @@ w.on('finish', function(){
 
 
       $(".emoji-grid").children().children().children().each(function(){
+        names.push($(this).attr('alt'))
         images.push($(this).attr('data-src'))
       })
 });

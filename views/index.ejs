@@ -15,13 +15,7 @@
 <script type="text/javascript" src="js/emojionearea.js"></script>
 
 </head>
-<!--
-<% images.forEach(function(image){ %>
-  <% if(image != null) { %>
-    <h4><%= image %></h4>
-  <% } %>
-<% }) %>
--->
+
 <body onload="SetUp()">
   <div class="form">
     <div id="loginSection">
@@ -80,8 +74,10 @@
     </div>
   </div> <!-- /form -->
   <div class="room">
-    <div class="canvas" style="float:left;">
-      <h1>hi there</h1>
+    <div class="canvas" style="float:left;overflow:scroll">
+      <% for(var i=43; i<images.length; i++) {%>
+     <img src="<%= images[i] %>" title="<%= names[i] %>"></img>
+  <% } %>
       <div id="countdown"></div>
     </div>
     <div class="container" style="overflow-x:hidden;overflow-y:hidden;height:100%; width:30%; float:right;max-height:100vh;">
