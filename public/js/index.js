@@ -94,6 +94,7 @@ $('#searchform').submit(function () {
 $('#loginForm').submit(function () {
   username = $('#username').val();
   socket.emit('userLogin', username);
+
   return false;
 });
 $(document).on('click', '.connectButton', function () {
@@ -185,6 +186,8 @@ $('.tab a').on('click', function (e) {
   $(target).fadeIn(600);
 
 });
+
+
   //Popup
 
 
