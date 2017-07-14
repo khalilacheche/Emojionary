@@ -74,7 +74,9 @@ socket.on('StartNextTurn', function(data) {
 });
 //Submit functions
 $('#newRoomForm').submit(function () {
-  socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
+  if($('#roomMax').val() > 0 ) {
+    socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
+  }
   return false; // Blocks the classical POST method
 });
 $('#chatform').submit(function () {

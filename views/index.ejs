@@ -8,7 +8,7 @@
   <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
   <script src="https://use.fontawesome.com/5c35264e88.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+  <link rel="stylesheet" href="https: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="css/style.css">
   <script src="/socket.io/socket.io.js"></script>
@@ -85,7 +85,7 @@
 
       <div class="">
         <% for(var i=43; i<images.length; i++) {%>
-       <img src="<%= images[i] %>" title="<%=names[i] %>"></img>
+       <img src="<%= images[i] %>" class="emojis" title="<%=names[i] %>"></img>
     <% } %>
       </div>
       <script type="text/javascript">
@@ -97,6 +97,9 @@
 
           }
         })
+      </script>
+      <script type="text/javascript">
+        
       </script>
 
 
@@ -134,7 +137,6 @@
       </div>
     </div>
   </div>
-
 </div>
   <script src="js/index.js"></script>
   <script type="text/javascript">
@@ -159,6 +161,7 @@
     }
     return "";
   }
+  /*
     $(document).ready(function() {
       $("#ChatInput").emojioneArea();
       if(getCookie("name")!=null) {
@@ -170,7 +173,7 @@
           $(".form").hide();
         }
       }
-
+*/
     });
 $('#loginForm').submit(function () {
   setCookie("name",$('#username').val(),1)
@@ -179,7 +182,5 @@ $('#newRoomForm').submit(function () {
   setCookie("roomName",$('#roomName').val(),1);
 })
   </script>
-
-
 </body>
 </html>
