@@ -17,6 +17,18 @@
 </head>
 
 <body onload="SetUp()">
+  <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+  <script>
+    var config = {
+      apiKey: "AIzaSyASBt91td1rPD20gtX30jP4D3r2b7DGn7A",
+      authDomain: "emojionary-eeafd.firebaseapp.com",
+      databaseURL: "https://emojionary-eeafd.firebaseio.com",
+      projectId: "emojionary-eeafd",
+      storageBucket: "emojionary-eeafd.appspot.com",
+      messagingSenderId: "222294226758",
+    };
+    firebase.initializeApp(config);
+  </script>
   <div class="form">
     <div id="error" style="color:red;">
         <div class="field-wrap">
