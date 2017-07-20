@@ -8,7 +8,6 @@ var express = require('express'),
   names = [],
   images = [],
   detailedNames = [],
-  FireBase = require("firebase");
   bodyParser = require('body-parser');
 var app = express(),
   server = require('http').createServer(app),
