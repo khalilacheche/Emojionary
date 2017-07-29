@@ -8,11 +8,17 @@ firebase.auth().onAuthStateChanged(function(user) {
     var isAnonymous = user.isAnonymous;
    var uid = user.uid;
      showRoom();//Showing the room
-
    } else {
    }
    // ...
  });
+ /* TO SIGN OUT , JUST UNCOMMENT THIS CODE
+ firebase.auth().signOut().then(function() {
+   console.log('Signed Out');
+ }, function(error) {
+   console.error('Sign Out Error', error);
+ });
+ */
 //Var declaration
 var roomID,
     username,
@@ -171,6 +177,7 @@ function newRoomClick(){
   $("#newRoomSection").show();
 }
 function SetUp(){
+  console.log("h");
   $(".room").hide();
   $("#loginSection").show();
   $("#error").hide();
