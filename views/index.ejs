@@ -114,12 +114,16 @@
         How is emoji accuracy calculated ?
           for each word in emoji object
             compare it to search value => returns a value between 0 and 24 where 0 signifies that they are equal
-          accuracy = returned value from each word / by number of words 
+          accuracy = returned value from each word / by number of words
       */
         var Emojis = []
+        var EmojiID=0;
         $('.emoji > img').each(function() {
-          var SplitString = $(this).attr("title").split(" ")
           var EmojiObject = {}
+          $(this).attr("id",EmojiID)
+          EmojiObject["ID"] = EmojiID
+          EmojiID++
+          var SplitString = $(this).attr("title").split(" ")
           EmojiObject["Accuracy"] = 0;
           for (var i = 0; i < SplitString.length; i++) {
             var namePair = "word_" + i
@@ -128,8 +132,6 @@
           }
           Emojis.push(EmojiObject)
         });
-        console.log(Emojis)
-
 
         function levenshteinDistance(a, b) {
           if (a.length == 0) return b.length;
@@ -152,31 +154,47 @@
               }
             }
           }
-
           return matrix[b.length][a.length];
         };
 
         $('#spotlight').on('keyup', function(e) {
           if (e.keyCode == 13) {
-            for (let img of Images) {
-              var Rate = levenshteinDistance(img, $(this).val())
-              if (Rate <= 4) {
-                $('.emoji > img').each(function() {
-                  if ($(this).attr("title") == img) {
-                    $(this).show()
-                    console.log($(this).attr("title"))
-                  }
-                })
-              } else {
-                $('.emoji > img').each(function() {
-                  if ($(this).attr("title") == img) {
-                    $(this).hide()
-                  }
-                })
-              }
+            if($('#spotlight').val() =="") {
+              Emojis.forEach(function(EmojiObject) {$('#'+EmojiObject["ID"]).show()})
+              return
             }
+
+            Emojis.forEach(function(EmojiObject) {
+              CalculateEmojiAccuracy($('#spotlight').val(),EmojiObject);
+              if(EmojiObject["Accuracy"] <= 2) {
+                $('#'+EmojiObject["ID"]).show()
+
+              } else {
+                $('#'+EmojiObject["ID"]).hide()
+              }
+            });
           }
         });
+
+        function CalculateEmojiAccuracy(SearchValue,EmojiObject) {
+          var ComparisonResults = []
+          Object.keys(EmojiObject).forEach(function(key) {
+            if(key != "Accuracy" && key != "ID") {
+              ComparisonResults.push(levenshteinDistance(EmojiObject[key],SearchValue))
+            }
+          })
+          var sum = 0;
+          for(var g = 0;g < ComparisonResults.length;g++) {
+            if(ComparisonResults[g]==1) {
+              sum = 0;
+              console.log(ComparisonResults[g]);
+              break;
+            } else {
+              sum += ComparisonResults[g]
+            }
+          }
+          EmojiObject["Accuracy"] = sum / ComparisonResults.length;
+        }
       </script>
 
 
