@@ -117,8 +117,7 @@
           accuracy = returned value from each word / by number of words
       */
         var Emojis = []
-        var EmojiElements = $('.emoji > img');
-        console.log(EmojiElements)
+        var EmojiElements = [];
         var EmojiID=0;
         $('.emoji > img').each(function() {
           var EmojiObject = {}
@@ -160,6 +159,7 @@
         };
 
         $('#spotlight').on('keyup', function(e) {
+          EmojiElements = []
           if (e.keyCode == 13) {
             if($('#spotlight').val() =="") {
               Emojis.forEach(function(EmojiObject) {$('#'+EmojiObject["ID"]).show()})
@@ -169,11 +169,22 @@
               CalculateEmojiAccuracy($('#spotlight').val(),EmojiObject);
               if(EmojiObject["Accuracy"] <= 2) {
                 $('#'+EmojiObject["ID"]).show()
-
+                EmojiElements.push($('<div>').append($('#'+EmojiObject["ID"]).clone()).html());
               } else {
                 $('#'+EmojiObject["ID"]).hide()
               }
+
             });
+            if(EmojiElements.length < 3 ) {
+              EmojiElements = []
+              Emojis.forEach(function(EmojiObject) {
+                if(EmojiObject["Accuracy"] <= 3) {
+                  $('#'+EmojiObject["ID"]).show()
+                  EmojiElements.push($('<div>').append($('#'+EmojiObject["ID"]).clone()).html());
+                }
+              });
+            }
+            console.log(EmojiElements)
           }
         });
 
@@ -195,19 +206,9 @@
             }
           }
           EmojiObject["Accuracy"] = sum / ComparisonResults.length;
+          $('#'+EmojiObject["ID"]).attr("acc",sum / ComparisonResults.length)
+
         }
-
-        /*
-          Time to fucking sort results by precision
-          read inner html of the emoji div
-          split every element and push it to an array : [<img>......</img>]
-          sort array based on precision attribute
-          convert array to string
-          change emoji div inner html to returned string
-          
-
-
-         */
       </script>
 
 
