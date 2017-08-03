@@ -1,6 +1,24 @@
 
 
 $(document).ready(SetUp());
+
+firebase.auth().onAuthStateChanged(function(user) {
+ if (user) {
+     // User is signed in.
+    var isAnonymous = user.isAnonymous;
+   var uid = user.uid;
+     showRoom();//Showing the room
+   } else {
+   }
+   // ...
+ });
+ /* TO SIGN OUT , JUST UNCOMMENT THIS CODE
+ firebase.auth().signOut().then(function() {
+   console.log('Signed Out');
+ }, function(error) {
+   console.error('Sign Out Error', error);
+ });
+ */
 //Var declaration
 var roomID,
     username,
@@ -8,8 +26,6 @@ var roomID,
     countdown,
     socket = io.connect('http://localhost:8080'),
     popup = document.getElementById('wordPopup');
-
-
 //Events
 socket.on('Usererror', function(data) {
   showError(data);//Show the error when the server tells us there's an error with the username
@@ -25,6 +41,23 @@ socket.on('connected', function(data) {
     roomID=data.Roomid; //Getting the id of the room we are connected to
   }
   showRoom();//Showing the room
+  firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+      // User is signed in.
+      var isAnonymous = user.isAnonymous;
+      var uid = user.uid;
+      console.log(uid);
+      // ...
+    } else {
+      firebase.auth().signInAnonymously().catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // ...
+      });
+    }
+    // ...
+  });
 });
 socket.on('message', function(data) {
   $('#chatbox').append(
@@ -74,7 +107,9 @@ socket.on('StartNextTurn', function(data) {
 });
 //Submit functions
 $('#newRoomForm').submit(function () {
-  socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
+  if($('#roomMax').val() > 0 ) {
+    socket.emit('newRoomReq', {user:username,roomName:$('#roomName').val(),roomMax:$('#roomMax').val()}); // Sending the request to the server via Socket.io (not HTTP requests)
+  }
   return false; // Blocks the classical POST method
 });
 $('#chatform').submit(function () {
@@ -94,6 +129,7 @@ $('#searchform').submit(function () {
 $('#loginForm').submit(function () {
   username = $('#username').val();
   socket.emit('userLogin', username);
+
   return false;
 });
 $(document).on('click', '.connectButton', function () {
@@ -141,6 +177,7 @@ function newRoomClick(){
   $("#newRoomSection").show();
 }
 function SetUp(){
+  console.log("h");
   $(".room").hide();
   $("#loginSection").show();
   $("#error").hide();
@@ -185,6 +222,8 @@ $('.tab a').on('click', function (e) {
   $(target).fadeIn(600);
 
 });
+
+
   //Popup
 
 

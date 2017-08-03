@@ -36,6 +36,7 @@ app.get('/', function(req, res) {
     images: images,
     names: names
   });
+
 });
 
 
@@ -138,6 +139,7 @@ io.sockets.on('connection', function (socket) {
         score: 0
       };
       userCount++;
+
   });
   socket.on('ChosenWord', function(data) {
     if (!data.user == rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username) {

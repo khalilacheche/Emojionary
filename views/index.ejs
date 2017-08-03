@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html >
+<html>
+
 <head>
   <meta charset="UTF-8">
   <title>Welcome!</title>
@@ -9,18 +10,29 @@
   <script src="https://use.fontawesome.com/5c35264e88.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
   <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="css/emojionearea.css">
-<script type="text/javascript" src="js/emojionearea.js"></script>
-
+  <script type="text/javascript" src="js/emojionearea.js"></script>
 </head>
 
-<body onload="SetUp()">
+<body>
+  <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+  <script>
+    var config = {
+      apiKey: "AIzaSyASBt91td1rPD20gtX30jP4D3r2b7DGn7A",
+      authDomain: "emojionary-eeafd.firebaseapp.com",
+      databaseURL: "https://emojionary-eeafd.firebaseio.com",
+      projectId: "emojionary-eeafd",
+      storageBucket: "emojionary-eeafd.appspot.com",
+      messagingSenderId: "222294226758",
+    };
+    firebase.initializeApp(config);
+  </script>
   <div class="form">
     <div id="error" style="color:red;">
-        <div class="field-wrap">
+      <div class="field-wrap">
         <label textcolor="red">
           Sorry! This username already exists!
         </label>
@@ -31,11 +43,12 @@
       <h1>Welcome !</h1>
       <form action="/" id="loginForm">
         <div class="field-wrap">
-        <input type="text" name="username" id="username" placeholder="Username"required autocomplete="off"/>
+          <input type="text" name="username" id="username" placeholder="Username" required autocomplete="off" />
         </div>
-        <button type="submit" id="submit" class="button button-block"/>Go On!</button>
+        <button type="submit" id="submit" class="button button-block" />Go On!</button>
       </form>
-    </div><!-- tab-content -->
+    </div>
+    <!-- tab-content -->
     <div id="chooseMenuSection">
       <ul class="tab-group">
         <li class="tab active"><a href="#newRoomSection">New Room</a></li>
@@ -47,14 +60,15 @@
           <form action="/newRoom" id="newRoomForm" method="post">
             <div class="top-row">
               <div class="field-wrap">
-                <input type="text" id="roomName" required autocomplete="off" placeholder="Room Name"/>
+                <input type="text" id="roomName" required autocomplete="off" placeholder="Room Name" />
               </div>
               <div class="field-wrap">
 
-                <input type="number" id="roomMax" required autocomplete="off" placeholder="Max people"/>
-              </div><!-- add is private -->
+                <input type="number" id="roomMax" required autocomplete="off" placeholder="Max people" />
+              </div>
+              <!-- add is private -->
               <br>
-              <button type="submit" class="button button-block"/>Create Room</button>
+              <button type="submit" class="button button-block" />Create Room</button>
             </div>
           </form>
         </div>
@@ -73,7 +87,8 @@
         </div>
       </div>
     </div>
-  </div> <!-- /form -->
+  </div>
+  <!-- /form -->
   <div class="room">
     <div class="canvas" style="float:left;overflow:scroll">
       <button id="searchButton" style="width: 100%;background-color: transparent;border: 0;color: beige;"><i class="fa fa-arrow-down fa-2x" aria-hidden="true"></i></button>
@@ -82,20 +97,14 @@
 
       </div>
 
-      <div class="">
+      <div class="emoji">
         <% for(var i=43; i<images.length; i++) {%>
-       <img src="<%= images[i] %>" title="<%=names[i] %>"></img>
-    <% } %>
+          <img src="<%= images[i] %>" class="emojis" title="<%=names[i] %>"></img>
+          <% } %>
       </div>
-      <script type="text/javascript">
-        $("#searchButton").click(function() {
-          if ( $("#spotlight").css('visibility') == 'hidden' ) {
-            $("#spotlight").css('visibility','visible');
-          } else {
-            $("#spotlight").css('visibility','hidden');
 
-          }
-        })
+      <script type="text/javascript" src="js/search.js">
+
       </script>
 
 
@@ -106,7 +115,7 @@
       <div class="row">
         <div class="panel panel-default" style="height:100vh margin-bottom:0;">
           <div class="panel-body">
-            <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:92vh;" id="chatbox">
+            <div class="container" style="overflow-y:scroll;overflow-x:hidden;height:92vh;" id="chatbox">
             </div>
             <div class="panel-footer">
               <form id="chatform">
@@ -127,21 +136,14 @@
     <div class="popup-content">
       <div class="popup-header">
         <h2>Choose one of these words: </h2>
-          <div id="timer"></div>
+        <div id="timer"></div>
       </div>
       <div class="popup-body">
       </div>
     </div>
   </div>
-
-</div>
-  <script src="js/index.js"></script>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      $("#ChatInput").emojioneArea();
-    });
-  </script>
-
-
+  </div>
 </body>
+<script src="js/index.js"></script>
+
 </html>
