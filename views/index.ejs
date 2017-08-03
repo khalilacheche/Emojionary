@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html >
+<html>
+
 <head>
   <meta charset="UTF-8">
   <title>Welcome!</title>
@@ -16,7 +17,7 @@
   <script type="text/javascript" src="js/emojionearea.js"></script>
 </head>
 
-<body >
+<body>
   <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
   <script>
     var config = {
@@ -31,7 +32,7 @@
   </script>
   <div class="form">
     <div id="error" style="color:red;">
-        <div class="field-wrap">
+      <div class="field-wrap">
         <label textcolor="red">
           Sorry! This username already exists!
         </label>
@@ -42,11 +43,12 @@
       <h1>Welcome !</h1>
       <form action="/" id="loginForm">
         <div class="field-wrap">
-        <input type="text" name="username" id="username" placeholder="Username"required autocomplete="off"/>
+          <input type="text" name="username" id="username" placeholder="Username" required autocomplete="off" />
         </div>
-        <button type="submit" id="submit" class="button button-block"/>Go On!</button>
+        <button type="submit" id="submit" class="button button-block" />Go On!</button>
       </form>
-    </div><!-- tab-content -->
+    </div>
+    <!-- tab-content -->
     <div id="chooseMenuSection">
       <ul class="tab-group">
         <li class="tab active"><a href="#newRoomSection">New Room</a></li>
@@ -58,14 +60,15 @@
           <form action="/newRoom" id="newRoomForm" method="post">
             <div class="top-row">
               <div class="field-wrap">
-                <input type="text" id="roomName" required autocomplete="off" placeholder="Room Name"/>
+                <input type="text" id="roomName" required autocomplete="off" placeholder="Room Name" />
               </div>
               <div class="field-wrap">
 
-                <input type="number" id="roomMax" required autocomplete="off" placeholder="Max people"/>
-              </div><!-- add is private -->
+                <input type="number" id="roomMax" required autocomplete="off" placeholder="Max people" />
+              </div>
+              <!-- add is private -->
               <br>
-              <button type="submit" class="button button-block"/>Create Room</button>
+              <button type="submit" class="button button-block" />Create Room</button>
             </div>
           </form>
         </div>
@@ -84,7 +87,8 @@
         </div>
       </div>
     </div>
-  </div> <!-- /form -->
+  </div>
+  <!-- /form -->
   <div class="room">
     <div class="canvas" style="float:left;overflow:scroll">
       <button id="searchButton" style="width: 100%;background-color: transparent;border: 0;color: beige;"><i class="fa fa-arrow-down fa-2x" aria-hidden="true"></i></button>
@@ -93,22 +97,66 @@
 
       </div>
 
-      <div class="">
+      <div class="emoji">
         <% for(var i=43; i<images.length; i++) {%>
-       <img src="<%= images[i] %>" class="emojis" title="<%=names[i] %>"></img>
-    <% } %>
+          <img src="<%= images[i] %>" class="emojis" title="<%=names[i] %>"></img>
+          <% } %>
       </div>
-      <script type="text/javascript">
-        $("#searchButton").click(function() {
-          if ( $("#spotlight").css('visibility') == 'hidden' ) {
-            $("#spotlight").css('visibility','visible');
-          } else {
-            $("#spotlight").css('visibility','hidden');
 
-          }
-        })
-      </script>
       <script type="text/javascript">
+        var Images = []
+        $('.emoji > img').each(function() {
+          $(this).attr("title", $(this).attr("title").replace(/ /g, ''))
+          Images.push($(this).attr("title"))
+        });
+
+
+        function levenshteinDistance(a, b) {
+          if (a.length == 0) return b.length;
+          if (b.length == 0) return a.length;
+          var matrix = [];
+          for (var i = 0; i <= b.length; i++) {
+            matrix[i] = [i];
+          }
+          for (var j = 0; j <= a.length; j++) {
+            matrix[0][j] = j;
+          }
+          for (var i = 1; i <= b.length; i++) {
+            for (var j = 1; j <= a.length; j++) {
+              if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+              } else {
+                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution
+                  Math.min(matrix[i][j - 1] + 1, // insertion
+                    matrix[i - 1][j] + 1)); // deletion
+              }
+            }
+          }
+
+          return matrix[b.length][a.length];
+        };
+
+        $('#spotlight').on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            for (let img of Images) {
+              var Rate = levenshteinDistance(img,$(this).val())
+              if (Rate <= 4) {
+                $('.emoji > img').each(function() {
+                  if ($(this).attr("title") == img) {
+                    $(this).show()
+                    console.log($(this).attr("title"))
+                  }
+                })
+              } else {
+                $('.emoji > img').each(function() {
+                  if ($(this).attr("title") == img) {
+                    $(this).hide()
+                  }
+                })
+              }
+            }
+          }
+        });
 
       </script>
 
@@ -120,7 +168,7 @@
       <div class="row">
         <div class="panel panel-default" style="height:100vh margin-bottom:0;">
           <div class="panel-body">
-            <div class="container"style="overflow-y:scroll;overflow-x:hidden;height:92vh;" id="chatbox">
+            <div class="container" style="overflow-y:scroll;overflow-x:hidden;height:92vh;" id="chatbox">
             </div>
             <div class="panel-footer">
               <form id="chatform">
@@ -141,13 +189,14 @@
     <div class="popup-content">
       <div class="popup-header">
         <h2>Choose one of these words: </h2>
-          <div id="timer"></div>
+        <div id="timer"></div>
       </div>
       <div class="popup-body">
       </div>
     </div>
   </div>
-</div>
+  </div>
 </body>
 <script src="js/index.js"></script>
+
 </html>
