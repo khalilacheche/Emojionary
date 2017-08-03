@@ -104,11 +104,31 @@
       </div>
 
       <script type="text/javascript">
-        var Images = []
+      /*
+      What is this shitty algorithm trying to accomplish ?
+      1) Create emoji object which contains "Accuracy" & Emoji title which is seperated into name/value pair based on the number of spaces there are
+      Example :
+      SmileEmoji = {Accuracy:0,word_1:"smile",word_2:"face"}
+      2)When user hits enter in the search bar :
+        if emoji accuracy < 2 : the emoji will be displayed , otherwise it will be hidden
+        How is emoji accuracy calculated ?
+          for each word in emoji object
+            compare it to search value => returns a value between 0 and 24 where 0 signifies that they are equal
+          accuracy = returned value from each word / by number of words 
+      */
+        var Emojis = []
         $('.emoji > img').each(function() {
-          $(this).attr("title", $(this).attr("title").replace(/ /g, ''))
-          Images.push($(this).attr("title"))
+          var SplitString = $(this).attr("title").split(" ")
+          var EmojiObject = {}
+          EmojiObject["Accuracy"] = 0;
+          for (var i = 0; i < SplitString.length; i++) {
+            var namePair = "word_" + i
+            var valuePair = SplitString[i]
+            EmojiObject[namePair] = valuePair
+          }
+          Emojis.push(EmojiObject)
         });
+        console.log(Emojis)
 
 
         function levenshteinDistance(a, b) {
@@ -136,10 +156,10 @@
           return matrix[b.length][a.length];
         };
 
-        $('#spotlight').on('keyup', function (e) {
+        $('#spotlight').on('keyup', function(e) {
           if (e.keyCode == 13) {
             for (let img of Images) {
-              var Rate = levenshteinDistance(img,$(this).val())
+              var Rate = levenshteinDistance(img, $(this).val())
               if (Rate <= 4) {
                 $('.emoji > img').each(function() {
                   if ($(this).attr("title") == img) {
@@ -157,7 +177,6 @@
             }
           }
         });
-
       </script>
 
 
