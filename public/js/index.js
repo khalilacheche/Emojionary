@@ -166,14 +166,10 @@ function startTimer(start){
     time--;
     if(time==0){
       window.clearInterval(timer);
-      timeout();
+        popup.style.display = "none";
     }
   }, 1000);
 
-}
-function timeout(){
-  socket.emit("TimeOut",{user:username,Roomid:roomID});
-  popup.style.display = "none";
 }
 function connectToRoom(id) {
   roomID=id;

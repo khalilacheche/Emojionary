@@ -40,17 +40,14 @@ app.get('/', function(req, res) {
 });
 io.sockets.on('connection', function (socket) {
   socket.on('handshake',function(data){
-    console.log("receiving handshake");
     for (var i = 0; i < users.length; i++) {
       if(users[i].uid==data){
         //returning the handshake and welcoming the user to his room
         socket.emit("welcome",{username:users[i].username,roomID:users[i].Roomid});
         users[i].sockets.push(socket);
-        console.log("welcoming user");
         return;
       }
     }
-    console.log("user is not welcome");
   });
   socket.on('connectToRoom',function(data){
     if (rooms[data.Roomid].connUsers.length==rooms[data.Roomid].roomMax) {
@@ -77,17 +74,6 @@ io.sockets.on('connection', function (socket) {
       console.log("starting new game on room " + data.Roomid);
       StartNextTurn(rooms[data.Roomid]);
     }
-  });
-  socket.on("TimeOut", function(data) {
-    if (data.Roomid == undefined || rooms[data.Roomid] == undefined)
-      return;
-    if (!data.user == rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username) {
-      return;
-    }
-    index = getIndexBysocket(socket);
-    users[index].score -= 2;
-    sendInfo(data.Roomid, users[index].username + " timed out! his score: " + users[index].score);
-    StartNextTurn(rooms[data.Roomid]);
   });
 
 
@@ -126,6 +112,7 @@ io.sockets.on('connection', function (socket) {
     var index = getIndexBysocket(socket);
     var userObj = {};
     users[index].Roomid = roomCount;
+    users[index].isCTR= true;
     userObj = users[index];
     rooms[roomCount].connUsers.push(userObj);
     socket.emit("connected", {
@@ -158,6 +145,7 @@ io.sockets.on('connection', function (socket) {
     if (!data.user == rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username) {
       return;
     }
+    clearTimeout(rooms[data.Roomid].timer);
     rooms[data.Roomid].word = data.word;
     for (var i = 0; i < users.length; i++) {
       if (users[i].Roomid == data.Roomid && users[i].username != data.user) {
@@ -166,6 +154,9 @@ io.sockets.on('connection', function (socket) {
         }
       }
     }
+    rooms[data.Roomid].timer = setTimeout(function(){
+      timeOut(data.Roomid);
+    },60000);
   });
   socket.on('message', function(data) {
     if (data.user == rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username) {
@@ -196,8 +187,9 @@ io.sockets.on('connection', function (socket) {
       users[index].score += 2;
       users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].sockets[0])].score += 2;
       sendInfo(data.Roomid, data.user + " won this Round!");
-      sendInfo(data.Roomid, data.user + "'s score: " + users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].socket)[0]].score);
+      sendInfo(data.Roomid, data.user + "'s score: " + users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].sockets[0])].score);
       sendInfo(data.Roomid, rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username + "'s score: " + users[index].score);
+      clearTimeout (rooms[data.Roomid].timer);
       StartNextTurn(rooms[data.Roomid]);
       return;
     }
@@ -217,8 +209,18 @@ io.sockets.on('connection', function (socket) {
     var index = getIndexBysocket(socket);
     if (index==-1)
       return ;
-    if (users[index].isCTR==false)
+    if (users[index].isCTR==false){
       return ;
+    }
+    for (var i = 0; i < users[index].sockets.length; i++) {
+
+      if(users[index].sockets[i].id == socket.id){
+        users[index].sockets.splice(i,1);
+        break;
+      }
+    }
+    if(users[index].sockets.length>0)
+      return;
     sendInfo(users[index].Roomid,users[index].username+" left the party!");
     var socketid;
     if (rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn] != undefined) {
@@ -293,6 +295,9 @@ function StartNextTurn(room) {
       words: ["Hey", "Khalil", "Random", "word"]
     });
   }
+  rooms[room.id].timer = setTimeout(function(){
+    timeOut(room.id);
+  }, 10000);
 }
 
 function sendInfo(Roomid, message) {
@@ -304,6 +309,15 @@ function sendInfo(Roomid, message) {
     }
   }
 }
+function timeOut(Roomid){
+  if (Roomid == undefined || rooms[Roomid] == undefined)
+    return;
+  var index = getIndexBysocket(rooms[Roomid].connUsers[rooms[Roomid].userTurn].sockets[0])
+  users[index].score -= 2;
+  sendInfo(Roomid, users[index].username + " timed out! his score: " + users[index].score);
+  StartNextTurn(rooms[Roomid]);
+}
+
 var w = fs.createWriteStream('downloaded.html');
 request('http://emojipedia.org/apple/').pipe(w)
 
