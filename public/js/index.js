@@ -1,17 +1,19 @@
 
 
 $(document).ready(SetUp());
-
+var uid
 firebase.auth().onAuthStateChanged(function(user) {
- if (user) {
+  if (user) {
      // User is signed in.
-    var isAnonymous = user.isAnonymous;
-   var uid = user.uid;
-     showRoom();//Showing the room
+     var isAnonymous = user.isAnonymous;
+     uid = user.uid;
+     console.log(uid);
+     socket.emit("handshake",uid);
+     //showRoom();//Showing the room
    } else {
    }
    // ...
- });
+});
  /* TO SIGN OUT , JUST UNCOMMENT THIS CODE
  firebase.auth().signOut().then(function() {
    console.log('Signed Out');
@@ -27,6 +29,12 @@ var roomID,
     socket = io.connect('http://localhost:8080'),
     popup = document.getElementById('wordPopup');
 //Events
+socket.on('welcome',function(data){
+  console.log("receiving welcome");
+  roomID= data.roomID;
+  username= data.username;
+  showRoom();
+})
 socket.on('Usererror', function(data) {
   showError(data);//Show the error when the server tells us there's an error with the username
 });
@@ -113,9 +121,8 @@ $('#newRoomForm').submit(function () {
   return false; // Blocks the classical POST method
 });
 $('#chatform').submit(function () {
-  msg = document.getElementsByClassName("emojionearea-editor")[0].innerHTML; //Getting the value of the input
+  msg = $('#ChatInput').val(); //Getting the value of the input
   $('#ChatInput').val(''); //Emptying the input
-  $('.emojionearea-editor').text(''); //Emptying the input
   if(msg!=''){
     socket.emit('message', {user:username,msg:msg,Roomid:roomID});//Sending the message to the server
   }
@@ -128,7 +135,7 @@ $('#searchform').submit(function () {
 });
 $('#loginForm').submit(function () {
   username = $('#username').val();
-  socket.emit('userLogin', username);
+  socket.emit('userLogin', {username:username,uid:uid});
 
   return false;
 });
@@ -170,14 +177,13 @@ function timeout(){
 }
 function connectToRoom(id) {
   roomID=id;
-  socket.emit("connectToRoom",{user:username,Roomid:id})
+  socket.emit("connectToRoom",{user:username,Roomid:id});
 }
 function newRoomClick(){
   $("#searchRoomSection").hide();
   $("#newRoomSection").show();
 }
 function SetUp(){
-  console.log("h");
   $(".room").hide();
   $("#loginSection").show();
   $("#error").hide();

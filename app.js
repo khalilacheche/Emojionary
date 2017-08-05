@@ -38,9 +38,20 @@ app.get('/', function(req, res) {
   });
 
 });
-
-
 io.sockets.on('connection', function (socket) {
+  socket.on('handshake',function(data){
+    console.log("receiving handshake");
+    for (var i = 0; i < users.length; i++) {
+      if(users[i].uid==data){
+        //returning the handshake and welcoming the user to his room
+        socket.emit("welcome",{username:users[i].username,roomID:users[i].Roomid});
+        users[i].sockets.push(socket);
+        console.log("welcoming user");
+        return;
+      }
+    }
+    console.log("user is not welcome");
+  });
   socket.on('connectToRoom',function(data){
     if (rooms[data.Roomid].connUsers.length==rooms[data.Roomid].roomMax) {
       socket.emit("Usererror","Sorry! This room is already full!");
@@ -133,11 +144,13 @@ io.sockets.on('connection', function (socket) {
     }
       socket.emit('authenticated');
       users[userCount] = {
-        username: data,
-        socket: socket,
+        username: data.username,
+        sockets:[],
         isCTR: false,
-        score: 0
+        score: 0,
+        uid:data.uid
       };
+      users[userCount].sockets.push(socket);
       userCount++;
 
   });
@@ -148,7 +161,9 @@ io.sockets.on('connection', function (socket) {
     rooms[data.Roomid].word = data.word;
     for (var i = 0; i < users.length; i++) {
       if (users[i].Roomid == data.Roomid && users[i].username != data.user) {
-        users[i].socket.emit("startGameCountdown", 60); //Tell all users but the user in this round to start counting
+        for (var j = 0; j < users[i].sockets.length; j++) {
+          users[i].sockets[j].emit("startGameCountdown", 60);//Tell all users but the user in this round to start counting
+        }
       }
     }
   });
@@ -168,29 +183,33 @@ io.sockets.on('connection', function (socket) {
       color = "#caf7e0";
       for (var i = 0; i < users.length; i++) {
         if (users[i].Roomid == data.Roomid) {
-          users[i].socket.emit("message", {
-            msg: data.msg,
-            user: data.user,
-            color: color
-          });
+          for (var j = 0; j < users[i].sockets.length; j++) {
+            users[i].sockets[j].emit("message", {
+              msg: data.msg,
+              user: data.user,
+              color: color
+            });
+          }
         }
       }
       index = getIndexBysocket(socket);
       users[index].score += 2;
-      users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].socket)].score += 2;
+      users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].sockets[0])].score += 2;
       sendInfo(data.Roomid, data.user + " won this Round!");
-      sendInfo(data.Roomid, data.user + "'s score: " + users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].socket)].score);
+      sendInfo(data.Roomid, data.user + "'s score: " + users[getIndexBysocket(rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].socket)[0]].score);
       sendInfo(data.Roomid, rooms[data.Roomid].connUsers[rooms[data.Roomid].userTurn].username + "'s score: " + users[index].score);
       StartNextTurn(rooms[data.Roomid]);
       return;
     }
     for (var i = 0; i < users.length; i++) {
       if (users[i].Roomid == data.Roomid) {
-        users[i].socket.emit("message", {
-          msg: data.msg,
-          user: data.user,
-          color: color
-        });
+        for (var j = 0; j < users[i].sockets.length; j++) {
+          users[i].sockets[j].emit("message", {
+            msg: data.msg,
+            user: data.user,
+            color: color
+          });
+        }
       }
     }
   });
@@ -203,7 +222,10 @@ io.sockets.on('connection', function (socket) {
     sendInfo(users[index].Roomid,users[index].username+" left the party!");
     var socketid;
     if (rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn] != undefined) {
-      socketid = rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn].socket.id;
+      socketids =[];
+      for (var i = 0; i < rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn].sockets.length; i++) {
+        socketids[i]=rooms[users[index].Roomid].connUsers[rooms[users[index].Roomid].userTurn].sockets[i].id
+      }
     }
     rooms[users[index].Roomid].connUsers.splice(getIndexBysocket(socket, rooms[users[index].Roomid].connUsers), 1);
     if (rooms[users[index].Roomid].connUsers.length < 1) {
@@ -215,8 +237,10 @@ io.sockets.on('connection', function (socket) {
         roomCount--;
       }
     } else {
-      if (socketid == socket.id) {
-        StartNextTurn(rooms[users[index].Roomid]);
+      for (var i = 0; i < socketids.length; i++) {
+        if (socketids[i] == socket.id) {
+          StartNextTurn(rooms[users[index].Roomid]);
+        }
       }
     }
     users.splice(index, 1);
@@ -245,12 +269,13 @@ function getIndexBysocket(socket, array) {
     array = users;
   }
   for (var i = 0; i < array.length; i++) {
-    if (array[i].socket.id == socket.id) {
-      return i;
+    for (var j = 0; j < array[i].sockets.length; j++) {
+      if(array[i].sockets[j].id == socket.id){
+        return i;
+      }
     }
   }
   return -1;
-
 }
 
 function StartNextTurn(room) {
@@ -263,15 +288,19 @@ function StartNextTurn(room) {
     room.userTurn = 0;
   }
   sendInfo(room.id, "it's " + room.connUsers[room.userTurn].username + "'s turn");
-  room.connUsers[room.userTurn].socket.emit("StartNextTurn", {
-    words: ["Hey", "Khalil", "Random", "word"]
-  });
+  for (var i = 0; i < room.connUsers[room.userTurn].sockets.length; i++) {
+    room.connUsers[room.userTurn].sockets[i].emit("StartNextTurn", {
+      words: ["Hey", "Khalil", "Random", "word"]
+    });
+  }
 }
 
 function sendInfo(Roomid, message) {
   for (var i = 0; i < users.length; i++) {
     if (users[i].Roomid == Roomid) {
-      users[i].socket.emit("info", message);
+      for (var j = 0; j < users[i].sockets.length; j++) {
+        users[i].sockets[j].emit("info", message);
+      }
     }
   }
 }
