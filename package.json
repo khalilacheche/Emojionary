@@ -1,6 +1,9 @@
 {
     "name": "emojionary",
     "version": "0.1.0",
+    "scripts": {
+      "start": "node app.js"
+    },
     "dependencies": {
         "body-parser": "1.17.2",
         "cheerio": "^1.0.0-rc.1",
