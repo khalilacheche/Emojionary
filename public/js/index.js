@@ -26,7 +26,7 @@ var roomID,
     username,
     timer,
     countdown,
-    socket = io.connect('http://localhost:8080'),
+    socket = io(),
     popup = document.getElementById('wordPopup');
 //Events
 socket.on('welcome',function(data){ //When the server recognizes us, it sends a welcome event for us to show the room
