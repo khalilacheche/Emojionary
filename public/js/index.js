@@ -3,13 +3,12 @@
 //Project Started on 09/06/2017 (dd/mm/yyyy)
 
 $(document).ready(SetUp());
-var uid
+var uid = firebase.auth().currentUser.uid;
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
      var isAnonymous = user.isAnonymous;
-     uid = user.uid;
-     console.log(uid);
-     socket.emit("handshake",uid);//Sending a handshake to the server so see if we are already connected to a user
+     //uid = user.uid;
+//Sending a handshake to the server so see if we are already connected to a user
    } else {
    }
    // ...
@@ -184,6 +183,9 @@ function SetUp(){
   $("#loginSection").show();
   $("#error").hide();
   $("#chooseMenuSection").hide();
+  console.log(uid);
+  socket.emit("handshake",uid);
+
 }
 function showError(msg){
   $("#error").text(msg);
