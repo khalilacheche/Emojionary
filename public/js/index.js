@@ -3,7 +3,7 @@
 //Project Started on 09/06/2017 (dd/mm/yyyy)
 
 $(document).ready(SetUp());
-var uid = firebase.auth().currentUser.uid;
+var uid;
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
      var isAnonymous = user.isAnonymous;
@@ -53,7 +53,7 @@ socket.on('connected', function(data) {
       // User is signed in.
       var isAnonymous = user.isAnonymous;
       var uid = user.uid;
-      console.log(uid);
+      //console.log(uid);
       // ...
     } else {
       firebase.auth().signInAnonymously().catch(function(error) {
@@ -183,10 +183,17 @@ function SetUp(){
   $("#loginSection").show();
   $("#error").hide();
   $("#chooseMenuSection").hide();
+  firebase.auth().signInAnonymously().catch(function(error) {
+    // Handle Errors here.
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    // ...
+  });
   setTimeout(function () {
+    uid = firebase.auth().currentUser.uid;
     console.log(uid);
     socket.emit("handshake",uid);
-  }, 500);
+  }, 1000);
 
 }
 function showError(msg){
