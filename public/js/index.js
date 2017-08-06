@@ -183,8 +183,10 @@ function SetUp(){
   $("#loginSection").show();
   $("#error").hide();
   $("#chooseMenuSection").hide();
-  console.log(uid);
-  socket.emit("handshake",uid);
+  setTimeout(function () {
+    console.log(uid);
+    socket.emit("handshake",uid);
+  }, 500);
 
 }
 function showError(msg){
