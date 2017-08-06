@@ -1,4 +1,4 @@
-//Khalil Acheche
+//Khalil Acheche & Amir Braham
 //Emojionary
 //Project Started on 09/06/2017 (dd/mm/yyyy)
 
@@ -39,12 +39,13 @@ app.get('/', function(req, res) {
 
 });
 io.sockets.on('connection', function (socket) {
+
   socket.on('handshake',function(data){
     for (var i = 0; i < users.length; i++) {
       if(users[i].uid==data){
         //returning the handshake and welcoming the user to his room
         socket.emit("welcome",{username:users[i].username,roomID:users[i].Roomid});
-        users[i].sockets.push(socket);
+        users[i].sockets.push(socket);//adding this socket to the user's sockets array
         return;
       }
     }
@@ -132,12 +133,12 @@ io.sockets.on('connection', function (socket) {
       socket.emit('authenticated');
       users[userCount] = {
         username: data.username,
-        sockets:[],
+        sockets:[],//the array of sockets the user has
         isCTR: false,
         score: 0,
         uid:data.uid
       };
-      users[userCount].sockets.push(socket);
+      users[userCount].sockets.push(socket);//pushing this socket to the sockets array
       userCount++;
 
   });

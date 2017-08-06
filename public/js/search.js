@@ -1,3 +1,6 @@
+//Khalil Acheche & Amir Braham
+//Emojionary
+//Project Started on 09/06/2017 (dd/mm/yyyy)
 var Emojis = [];
 var EmojiElements = [];
 var EmojiID=0;

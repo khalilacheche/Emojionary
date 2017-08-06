@@ -1,15 +1,15 @@
-
+//Khalil Acheche & Amir Braham
+//Emojionary
+//Project Started on 09/06/2017 (dd/mm/yyyy)
 
 $(document).ready(SetUp());
 var uid
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
-     // User is signed in.
      var isAnonymous = user.isAnonymous;
      uid = user.uid;
      console.log(uid);
-     socket.emit("handshake",uid);
-     //showRoom();//Showing the room
+     socket.emit("handshake",uid);//Sending a handshake to the server so see if we are already connected to a user
    } else {
    }
    // ...
@@ -29,7 +29,7 @@ var roomID,
     socket = io.connect('http://localhost:8080'),
     popup = document.getElementById('wordPopup');
 //Events
-socket.on('welcome',function(data){
+socket.on('welcome',function(data){ //When the server recognizes us, it sends a welcome event for us to show the room
   console.log("receiving welcome");
   roomID= data.roomID;
   username= data.username;
